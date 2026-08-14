@@ -1,0 +1,66 @@
+const fs = require('fs');
+const path = require('path');
+
+const filePath = path.join(__dirname, 'grades.json');
+
+function readGrades() {
+    try {
+        if (!fs.existsSync(filePath)) return [];
+        const data = fs.readFileSync(filePath, 'utf-8');
+        return JSON.parse(data || '[]');
+    } catch (error) {
+        return [];
+    }
+}
+
+function saveGrades(grades) {
+    fs.writeFileSync(filePath, JSON.stringify(grades, null, 2), 'utf-8');
+}
+
+function displayGrades() {
+    const grades = readGrades();
+    console.table(grades);
+}
+
+function addGrade(name, subject, grade) {
+    const grades = readGrades();
+    const newRecord = { 
+        id: Date.now().toString(), 
+        name, 
+        subject, 
+        grade: Number(grade) 
+    };
+    grades.push(newRecord);
+    saveGrades(grades);
+}
+
+function updateGrade(idOrName, newGrade) {
+    const grades = readGrades();
+    const index = grades.findIndex(
+        item => item.id === idOrName || item.name.toLowerCase() === idOrName.toLowerCase()
+    );
+    if (index !== -1) {
+        grades[index].grade = Number(newGrade);
+        saveGrades(grades);
+    }
+}
+
+function deleteGrade(idOrName) {
+    const grades = readGrades();
+    const filtered = grades.filter(
+        item => item.id !== idOrName && item.name.toLowerCase() !== idOrName.toLowerCase()
+    );
+    if (grades.length !== filtered.length) {
+        saveGrades(filtered);
+    }
+}
+
+addGrade("Ahmed", "Math", 95);
+addGrade("Mona", "Science", 88);
+displayGrades();
+
+updateGrade("Ahmed", 99);
+displayGrades();
+
+deleteGrade("Mona");
+displayGrades();
